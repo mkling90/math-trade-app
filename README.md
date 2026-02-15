@@ -49,21 +49,6 @@ Main React component:
 - State management with React hooks
 - Imports types, data, and functions from `lib/`
 
-## 🔄 Migration from Old Structure
-
-**Before** (1029 lines in one file):
-```
-components/MathTradeApp.tsx    # Everything mixed together
-```
-
-**After** (organized and maintainable):
-```
-components/MathTradeApp.tsx    # ~600 lines - UI only
-lib/types.ts                   # ~40 lines - Data models
-lib/mockData.ts                # ~60 lines - Sample data
-lib/algorithm.ts               # ~100 lines - Trade logic
-lib/utils.ts                   # ~50 lines - Helpers
-```
 
 ## 🚀 Next Steps
 
