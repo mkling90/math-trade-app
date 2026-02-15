@@ -186,6 +186,10 @@ function runTTC(items: Item[], games: Game[], users: User[]): { allocation: Reco
         const receivingGame = games.find(g => g.id === receivingGameId);
         
         const item = itemMap.get(givingItemId);
+        if (!item) {
+          console.log(`      ERROR: Item ${givingItemId} not found in itemMap`);
+          continue;
+        }
         const wantsReceivingItem = item.preference_list.includes(receivingItemId);
         
         console.log(`      ${givingGame?.name} -> ${receivingGame?.name}: ${wantsReceivingItem ? '✓' : '✗ DOES NOT WANT'}`);
