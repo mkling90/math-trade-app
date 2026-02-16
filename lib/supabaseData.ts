@@ -63,10 +63,13 @@ export function useGroups(userId: string | undefined) {
 
     async function fetchGroups() {
       try {
-        // Fetch groups where user is a member
+        // Strategy: Fetch group_members first, then get group details
+        // This avoids RLS recursion issues
+        
+        // Step 1: Get groups where user is a member
         const { data: memberData, error: memberError } = await supabase
           .from('group_members')
-          .select('group_id')
+          .select('group_id, is_admin')
           .eq('user_id', userId);
 
         if (memberError) {
@@ -75,19 +78,13 @@ export function useGroups(userId: string | undefined) {
           return;
         }
 
-        const groupIds = memberData.map(m => m.group_id);
+        const memberGroupIds = memberData?.map(m => m.group_id) || [];
+        const memberAdminMap = new Map(memberData?.map(m => [m.group_id, m.is_admin]) || []);
 
-        if (groupIds.length === 0) {
-          setGroups([]);
-          setLoading(false);
-          return;
-        }
-
-        // Fetch group details
-        const { data: groupsData, error: groupsError } = await supabase
+        // Step 2: Get all groups (RLS will filter to: created, public, or global admin)
+        const { data: allGroups, error: groupsError } = await supabase
           .from('groups')
-          .select('*')
-          .in('id', groupIds);
+          .select('*');
 
         if (groupsError) {
           console.error('Error fetching groups:', groupsError);
@@ -95,9 +92,9 @@ export function useGroups(userId: string | undefined) {
           return;
         }
 
-        // Fetch members and admins for each group
+        // Step 3: For each group, get all members
         const groupsWithMembers = await Promise.all(
-          groupsData.map(async (group) => {
+          (allGroups || []).map(async (group) => {
             const { data: members } = await supabase
               .from('group_members')
               .select('user_id, is_admin')
