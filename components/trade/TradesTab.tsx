@@ -32,7 +32,7 @@ export default function TradesTab() {
   
   const exportTrades = () => {
     if (trades.length === 0) return;
-    exportTradesToFile(trades, games, users, currentGroup.name);
+    exportTradesToFile(trades, currentGroup.name);
   };
   
   // Sort trades: user's trades first
