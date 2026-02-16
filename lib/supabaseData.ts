@@ -298,36 +298,18 @@ export async function createGroup(
   inviteCode: string,
   isPublic: boolean
 ) {
-  // Create group
-  const { data: group, error: groupError } = await supabase
-    .from('groups')
-    .insert([
-      {
-        name,
-        invite_code: inviteCode,
-        is_public: isPublic,
-        created_by: userId,
-      },
-    ])
-    .select()
-    .single();
+  // Use SECURITY DEFINER function to bypass RLS issues
+  const { data, error } = await supabase
+    .rpc('create_group_with_admin', {
+      p_user_id: userId,
+      p_name: name,
+      p_invite_code: inviteCode,
+      p_is_public: isPublic
+    });
 
-  if (groupError) throw groupError;
-
-  // Add creator as admin member
-  const { error: memberError } = await supabase
-    .from('group_members')
-    .insert([
-      {
-        group_id: group.id,
-        user_id: userId,
-        is_admin: true,
-      },
-    ]);
-
-  if (memberError) throw memberError;
-
-  return group;
+  if (error) throw error;
+  
+  return { id: data };
 }
 
 export async function joinGroup(userId: string, inviteCode: string) {
