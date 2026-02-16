@@ -24,6 +24,11 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
   const [filterUser, setFilterUser] = useState<number | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   
+  // Safety check - should never happen but handle it
+  if (!currentGroup) {
+    return null;
+  }
+  
   const game = games.find(g => g.id === gameId);
   const myWants = wants.filter(w => w.myGameId === gameId).sort((a, b) => a.rank - b.rank);
   
