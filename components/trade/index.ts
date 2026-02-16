@@ -1,5 +1,5 @@
 // Export all trade components for easy importing
-export { default as MathTradeApp } from './MathTradeApp-New';
+// Note: MathTradeApp-New.tsx is in parent components/ folder, not here
 export { TradeAppProvider, useTradeApp } from './TradeAppContext';
 export { default as GroupSelector } from './GroupSelector';
 export { default as MyGamesTab } from './MyGamesTab';
