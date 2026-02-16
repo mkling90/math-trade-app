@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Plus } from 'lucide-react';
+import { Users, Plus, Copy, Check } from 'lucide-react';
 import { useTradeApp } from './TradeAppContext';
 import JoinGroupModal from './JoinGroupModal';
 import CreateGroupModal from './CreateGroupModal';
@@ -10,6 +10,15 @@ export default function GroupSelector() {
   const { groups, currentGroup, setCurrentGroup } = useTradeApp();
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+  
+  const copyInviteCode = () => {
+    if (currentGroup?.inviteCode) {
+      navigator.clipboard.writeText(currentGroup.inviteCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
   
   // If no groups, show message
   if (groups.length === 0) {
@@ -46,19 +55,28 @@ export default function GroupSelector() {
       <div className="flex items-center gap-3 mb-6">
         <Users className="text-indigo-600" />
         <select
-          value={currentGroup?.id || ''}
+          value={currentGroup?.id?.toString() || ''}
           onChange={(e) => {
-            const group = groups.find(g => g.id === parseInt(e.target.value));
+            const group = groups.find(g => g.id.toString() === e.target.value);
             if (group) setCurrentGroup(group);
           }}
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         >
           {groups.map(group => (
-            <option key={group.id} value={group.id}>
+            <option key={group.id.toString()} value={group.id.toString()}>
               {group.name} ({group.memberIds.length} members) {group.inviteCode ? `- ${group.inviteCode}` : ''}
             </option>
           ))}
         </select>
+        <button
+          onClick={copyInviteCode}
+          disabled={!currentGroup?.inviteCode}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm flex items-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          title="Copy invite code to clipboard"
+        >
+          {copied ? <Check size={16} /> : <Copy size={16} />}
+          
+        </button>
         <button
           onClick={() => setShowJoinModal(true)}
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"

@@ -18,10 +18,11 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
     wants, 
     setWants,
     users,
-    useMockGames 
+    useMockGames,
+    refetchWants
   } = useTradeApp();
   
-  const [filterUser, setFilterUser] = useState<number | 'all'>('all');
+  const [filterUser, setFilterUser] = useState<string | number | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   
   // Safety check - should never happen but handle it
@@ -40,7 +41,7 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
   
   const filteredGames = useMemo(() => {
     return availableGames.filter(g => {
-      const matchesUser = filterUser === 'all' || g.userId === filterUser;
+      const matchesUser = filterUser === 'all' || String(g.userId) === String(filterUser);
       const matchesSearch = !searchTerm || 
         g.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (g.comment && g.comment.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -72,7 +73,7 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
         setWants([...wants, { myGameId: gameId, acceptGameId, rank: nextRank }]);
       }
     } else {
-      // Real database mode
+      // Real database mode - update database but don't refetch yet
       try {
         if (existing) {
           await deleteWant(gameId, acceptGameId);
@@ -85,8 +86,29 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
           const nextRank = myWants.length + 1;
           await createWant(gameId, acceptGameId, nextRank);
         }
+        // Optimistically update local state for immediate UI feedback
+        if (existing) {
+          const removedRank = existing.rank;
+          setWants(wants
+            .filter(w => !(w.myGameId === gameId && w.acceptGameId === acceptGameId))
+            .map(w => {
+              if (w.myGameId === gameId && w.rank > removedRank) {
+                return { ...w, rank: w.rank - 1 };
+              }
+              return w;
+            })
+          );
+        } else {
+          const nextRank = myWants.length + 1;
+          setWants([...wants, { myGameId: gameId, acceptGameId, rank: nextRank }]);
+        }
       } catch (error: any) {
-        alert('Error updating wants: ' + error.message);
+        if (error.message?.includes('duplicate') || error.code === '23505') {
+          // Duplicate detected - refetch to sync
+          if (refetchWants) refetchWants();
+        } else {
+          alert('Error updating wants: ' + error.message);
+        }
       }
     }
   };
@@ -108,15 +130,29 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
         return w;
       }));
     } else {
-      // Real database mode
-      try {
-        const swapWith = myWants.find(w => w.rank === want.rank - 1);
-        if (swapWith) {
+      // Real database mode - optimistic update
+      const swapWith = myWants.find(w => w.rank === want.rank - 1);
+      if (swapWith) {
+        // Update UI immediately
+        setWants(wants.map(w => {
+          if (w.myGameId === gameId) {
+            if (w.acceptGameId === acceptGameId) {
+              return { ...w, rank: w.rank - 1 };
+            } else if (w.rank === want.rank - 1) {
+              return { ...w, rank: w.rank + 1 };
+            }
+          }
+          return w;
+        }));
+        
+        // Update database in background
+        try {
           await updateWantRank(want.myGameId, want.acceptGameId, want.rank - 1);
           await updateWantRank(swapWith.myGameId, swapWith.acceptGameId, swapWith.rank + 1);
+        } catch (error: any) {
+          alert('Error reordering: ' + error.message);
+          if (refetchWants) refetchWants(); // Sync on error
         }
-      } catch (error: any) {
-        alert('Error reordering: ' + error.message);
       }
     }
   };
@@ -139,15 +175,29 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
         return w;
       }));
     } else {
-      // Real database mode
-      try {
-        const swapWith = myWants.find(w => w.rank === want.rank + 1);
-        if (swapWith) {
+      // Real database mode - optimistic update
+      const swapWith = myWants.find(w => w.rank === want.rank + 1);
+      if (swapWith) {
+        // Update UI immediately
+        setWants(wants.map(w => {
+          if (w.myGameId === gameId) {
+            if (w.acceptGameId === acceptGameId) {
+              return { ...w, rank: w.rank + 1 };
+            } else if (w.rank === want.rank + 1) {
+              return { ...w, rank: w.rank - 1 };
+            }
+          }
+          return w;
+        }));
+        
+        // Update database in background
+        try {
           await updateWantRank(want.myGameId, want.acceptGameId, want.rank + 1);
           await updateWantRank(swapWith.myGameId, swapWith.acceptGameId, swapWith.rank - 1);
+        } catch (error: any) {
+          alert('Error reordering: ' + error.message);
+          if (refetchWants) refetchWants(); // Sync on error
         }
-      } catch (error: any) {
-        alert('Error reordering: ' + error.message);
       }
     }
   };
@@ -226,13 +276,23 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
             <div className="flex-1">
               <label className="block text-xs font-medium text-gray-600 mb-1">Filter by User</label>
               <select
-                value={filterUser}
-                onChange={(e) => setFilterUser(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
+                value={filterUser === 'all' ? 'all' : String(filterUser)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === 'all') {
+                    setFilterUser('all');
+                  } else {
+                    // Keep as string (UUID) or convert to number (mock data)
+                    // Find the matching user to get the correct ID type
+                    const matchingUser = otherUsers.find(u => String(u.id) === value);
+                    setFilterUser(matchingUser?.id || value);
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="all">All Users</option>
                 {otherUsers.map(u => (
-                  <option key={u.id} value={u.id}>{u.name}</option>
+                  <option key={String(u.id)} value={String(u.id)}>{u.name}</option>
                 ))}
               </select>
             </div>
@@ -316,7 +376,13 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
         
         <div className="border-t p-4">
           <button
-            onClick={onClose}
+            onClick={() => {
+              // Refetch to ensure final sync with database
+              if (!useMockGames && refetchWants) {
+                refetchWants();
+              }
+              onClose();
+            }}
             className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
             Done

@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import type { User, Group, Game, Want, Trade } from '@/lib/types';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { INITIAL_USERS, INITIAL_GROUPS, INITIAL_GAMES, INITIAL_WANTS } from '@/lib/mockData';
-import { useProfile, useGroups, useGames, useWants } from '@/lib/supabaseData';
+import { useProfile, useGroups, useGames, useWants, useGroupMembers } from '@/lib/supabaseData';
 
 interface TradeAppContextType {
   // User & Auth
@@ -22,10 +22,12 @@ interface TradeAppContextType {
   // Games
   games: Game[];
   setGames: (games: Game[]) => void;
+  refetchGames?: () => void;
   
   // Wants
   wants: Want[];
   setWants: (wants: Want[]) => void;
+  refetchWants?: () => void;
   
   // Trades
   trades: Trade[];
@@ -72,7 +74,7 @@ export function TradeAppProvider({ children, supabaseUser }: TradeAppProviderPro
   const [currentUser, setCurrentUser] = useState<User>(
     useMockGames ? INITIAL_USERS[0] : { id: 0, name: '', globalAdmin: false }
   );
-  const [users] = useState<User[]>(useMockGames ? INITIAL_USERS : []);
+  const [users, setUsers] = useState<User[]>(useMockGames ? INITIAL_USERS : []);
   const [groups, setGroups] = useState<Group[]>(useMockGames ? INITIAL_GROUPS : []);
   const [currentGroup, setCurrentGroup] = useState<Group | null>(
     useMockGames ? INITIAL_GROUPS[0] : null
@@ -83,11 +85,14 @@ export function TradeAppProvider({ children, supabaseUser }: TradeAppProviderPro
   const [activeTab, setActiveTab] = useState('my-games');
   
   // Supabase data for current group
-  const { games: supabaseGames, loading: gamesLoading } = useGames(
-    useMockGames ? null : (currentGroup?.id ?? null)
-  );
-  const { wants: supabaseWants, loading: wantsLoading } = useWants(
-    useMockGames ? null : (currentGroup?.id ?? null)
+  const groupIdentifier = useMockGames 
+    ? null 
+    : (currentGroup?.id ? String(currentGroup.id) : null);
+    
+  const { games: supabaseGames, loading: gamesLoading, refetch: refetchGames } = useGames(groupIdentifier);
+  const { wants: supabaseWants, loading: wantsLoading, refetch: refetchWants } = useWants(groupIdentifier);
+  const { members: groupMembers, loading: membersLoading } = useGroupMembers(
+    useMockGames ? undefined : currentGroup?.memberIds
   );
   
   // Sync Supabase data when loaded
@@ -112,6 +117,13 @@ export function TradeAppProvider({ children, supabaseUser }: TradeAppProviderPro
     }
   }, [useMockGames, supabaseWants]);
   
+  // Sync group members to users array
+  useEffect(() => {
+    if (!useMockGames && groupMembers && groupMembers.length > 0) {
+      setUsers(groupMembers);
+    }
+  }, [useMockGames, groupMembers]);
+  
   // Update current user from Supabase profile
   useEffect(() => {
     if (!useMockGames && supabaseProfile) {
@@ -132,8 +144,10 @@ export function TradeAppProvider({ children, supabaseUser }: TradeAppProviderPro
     setGroups,
     games,
     setGames,
+    refetchGames,
     wants,
     setWants,
+    refetchWants,
     trades,
     setTrades,
     activeTab,

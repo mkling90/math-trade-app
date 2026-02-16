@@ -11,7 +11,7 @@ import { Game, Want, User, Trade, TradeStep } from './types';
 
 interface Item {
   item_id: string;
-  owner_user_id: string | number; // Can be UUID or number
+  owner_user_id: number;
   preference_list: string[];
 }
 
@@ -28,26 +28,24 @@ export const calculateOptimalTrades = (
   games: Game[],
   wants: Want[],
   users: User[],
-  groupId: string | number
+  groupId: number
 ): Trade[] => {
   console.log('=== TOP TRADING CYCLES (Item-Based) ===');
   
-  // Convert groupId to string for comparison
-  const groupIdStr = String(groupId);
-  const groupGames = games.filter(g => String(g.groupId) === groupIdStr);
+  const groupGames = games.filter(g => g.groupId === groupId);
   
   // Convert to item format
   const items: Item[] = groupGames.map(game => {
     // Build preference list for this item
     const preference_list: string[] = [];
     const itemWants = wants
-      .filter(w => String(w.myGameId) === String(game.id))
+      .filter(w => w.myGameId === game.id)
       .sort((a, b) => a.rank - b.rank); // CRITICAL: Sort by rank (1 = most preferred)
     
     itemWants.forEach(want => {
-      const targetGame = groupGames.find(g => String(g.id) === String(want.acceptGameId));
+      const targetGame = groupGames.find(g => g.id === want.acceptGameId);
       // Can accept items from other owners (not your own items)
-      if (targetGame && String(targetGame.userId) !== String(game.userId)) {
+      if (targetGame && targetGame.userId !== game.userId) {
         preference_list.push(`item_${want.acceptGameId}`);
       }
     });
@@ -64,18 +62,18 @@ export const calculateOptimalTrades = (
   // Validate preference lists
   console.log('\n=== VALIDATING PREFERENCE LISTS ===');
   items.forEach(item => {
-    const gameIdStr = item.item_id.replace('item_', '');
-    const game = groupGames.find(g => String(g.id) === gameIdStr);
-    const owner = users.find(u => String(u.id) === String(item.owner_user_id));
+    const gameId = parseInt(item.item_id.replace('item_', ''));
+    const game = groupGames.find(g => g.id === gameId);
+    const owner = users.find(u => u.id === item.owner_user_id);
     console.log(`${item.item_id} (${game?.name}) owned by ${owner?.name}:`);
     console.log(`  Wants: ${item.preference_list.join(' > ') || 'NOTHING'}`);
     
     // Show the actual game names
     if (item.preference_list.length > 0) {
       item.preference_list.forEach((prefId, idx) => {
-        const prefGameIdStr = prefId.replace('item_', '');
-        const prefGame = groupGames.find(g => String(g.id) === prefGameIdStr);
-        console.log(`    ${idx + 1}. ${prefGame?.name} (id:${prefGameIdStr})`);
+        const prefGameId = parseInt(prefId.replace('item_', ''));
+        const prefGame = groupGames.find(g => g.id === prefGameId);
+        console.log(`    ${idx + 1}. ${prefGame?.name} (id:${prefGameId})`);
       });
     }
   });
@@ -181,11 +179,11 @@ function runTTC(items: Item[], games: Game[], users: User[]): { allocation: Reco
         const givingItemId = cycle[j];
         const receivingItemId = edges[givingItemId]; // What this item points to
         
-        const givingGameIdStr = givingItemId.replace('item_', '');
-        const receivingGameIdStr = receivingItemId.replace('item_', '');
+        const givingGameId = parseInt(givingItemId.replace('item_', ''));
+        const receivingGameId = parseInt(receivingItemId.replace('item_', ''));
         
-        const givingGame = games.find(g => String(g.id) === givingGameIdStr);
-        const receivingGame = games.find(g => String(g.id) === receivingGameIdStr);
+        const givingGame = games.find(g => g.id === givingGameId);
+        const receivingGame = games.find(g => g.id === receivingGameId);
         
         const item = itemMap.get(givingItemId);
         if (!item) {
@@ -258,7 +256,7 @@ function convertToTrades(
       // Build trade chain from allocation
       // For each item in the cycle, find what it receives
       const chain: TradeStep[] = [];
-      const involvedUserIds: (string | number)[] = [];
+      const involvedUserIds: number[] = [];
       
       // Create a map of who gives what to whom
       const giversMap = new Map<string, string>(); // itemReceived -> itemGiving
@@ -270,14 +268,14 @@ function convertToTrades(
       
       // Build chain: for each item, show who gives it
       cycle.forEach(itemId => {
-        const gameIdStr = itemId.replace('item_', '');
-        const game = games.find(g => String(g.id) === gameIdStr)!;
-        const owner = users.find(u => String(u.id) === String(game.userId))!;
+        const gameId = parseInt(itemId.replace('item_', ''));
+        const game = games.find(g => g.id === gameId)!;
+        const owner = users.find(u => u.id === game.userId)!;
         
         const receivesItemId = result.allocation[itemId];
-        const receivesGameIdStr = receivesItemId.replace('item_', '');
-        const receivesGame = games.find(g => String(g.id) === receivesGameIdStr)!;
-        const giver = users.find(u => String(u.id) === String(receivesGame.userId))!;
+        const receivesGameId = parseInt(receivesItemId.replace('item_', ''));
+        const receivesGame = games.find(g => g.id === receivesGameId)!;
+        const giver = users.find(u => u.id === receivesGame.userId)!;
         
         // giver gives receivesGame to owner
         chain.push({

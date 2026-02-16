@@ -1,33 +1,32 @@
 // Data models for the math trade application
 
 export interface User {
-  id: number;
+  id: string | number; // UUID string (Supabase) or number (mock)
   name: string;
   globalAdmin?: boolean; // Super admin who can manage all groups
 }
 
 export interface Group {
-  id: number; // For display/UI compatibility
-  uuid?: string; // Actual database UUID
+  id: string | number; // UUID string (Supabase) or number (mock)
   name: string;
-  memberIds: number[];
-  adminIds: number[];
+  memberIds: (string | number)[]; // UUID strings or numbers
+  adminIds: (string | number)[]; // UUID strings or numbers
   inviteCode: string;
   isPublic: boolean;
 }
 
 export interface Game {
-  id: number;
-  userId: number;
-  groupId: number;
+  id: string | number; // UUID string (Supabase) or number (mock)
+  userId: string | number; // UUID string or number
+  groupId: string | number; // UUID string or number
   name: string;
   condition: string;
   comment: string;
 }
 
 export interface Want {
-  myGameId: number;
-  acceptGameId: number;
+  myGameId: string | number; // UUID string or number
+  acceptGameId: string | number; // UUID string or number
   rank: number; // 1 = most preferred, 2 = second most preferred, etc.
 }
 

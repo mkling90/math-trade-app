@@ -17,7 +17,8 @@ export default function MyGamesTab() {
     wants, 
     setWants,
     trades,
-    useMockGames 
+    useMockGames,
+    refetchGames
   } = useTradeApp();
   
   const [newGameName, setNewGameName] = useState('');
@@ -56,12 +57,13 @@ export default function MyGamesTab() {
       try {
         await createGameDB(
           supabaseUser!.id,
-          currentGroup.uuid || String(currentGroup.id), // Use UUID if available
+          String(currentGroup.id), // Convert to string (works for both UUID and number)
           newGameName,
           newGameCondition,
           newGameComment
         );
-        // Data will refresh via hook
+        // Refresh the games list
+        if (refetchGames) refetchGames();
       } catch (error: any) {
         alert('Error adding game: ' + error.message);
       }
@@ -80,7 +82,8 @@ export default function MyGamesTab() {
       // Real database mode
       try {
         await deleteGameDB(gameId);
-        // Data will refresh via hook
+        // Refresh the games list
+        if (refetchGames) refetchGames();
       } catch (error: any) {
         alert('Error deleting game: ' + error.message);
       }
@@ -119,7 +122,7 @@ export default function MyGamesTab() {
                 onChange={(e) => setNewGameCondition(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                <option>Like New</option>
+                <option>New In Shrink</option>
                 <option>Excellent</option>
                 <option>Good</option>
                 <option>Fair</option>

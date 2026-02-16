@@ -20,7 +20,7 @@ export default function GameCard({
   onDelete,
   disabled = false
 }: GameCardProps) {
-  const { users, wants } = useTradeApp();
+  const { users, wants, games } = useTradeApp(); // Get games here
   
   const owner = users.find(u => u.id === game.userId);
   const gameWants = wants.filter(w => w.myGameId === game.id).sort((a, b) => a.rank - b.rank);
@@ -92,7 +92,7 @@ export default function GameCard({
           </p>
           <div className="space-y-1">
             {gameWants.map(want => {
-              const acceptGame = useTradeApp().games.find(g => g.id === want.acceptGameId);
+              const acceptGame = games.find(g => g.id === want.acceptGameId); // Use games from hook above
               return (
                 <div key={want.acceptGameId} className="flex items-center gap-2">
                   <span className="text-xs font-bold text-gray-500 w-6">{want.rank}.</span>
