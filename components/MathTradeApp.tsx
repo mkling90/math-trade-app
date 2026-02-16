@@ -8,8 +8,18 @@ import { User as UserType, Group, Game, Want, Trade } from '@/lib/types';
 import { INITIAL_USERS, INITIAL_GROUPS, INITIAL_GAMES, INITIAL_WANTS } from '@/lib/mockData';
 import { calculateOptimalTrades } from '@/lib/algorithm';
 import { generateInviteCode, exportTradesToFile } from '@/lib/utils';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-export default function MathTradeApp() {
+interface MathTradeAppProps {
+  user?: SupabaseUser; // Optional - only passed when using real auth
+}
+
+export default function MathTradeApp({ user }: MathTradeAppProps = {}) {
+  const useMockGames = process.env.NEXT_PUBLIC_USE_MOCK_GAMES === 'true';
+  
+  console.log('MathTradeApp mode:', useMockGames ? 'MOCK GAMES' : 'REAL DATABASE');
+  console.log('Authenticated user:', user?.email || 'using mock users');
+  
   // State management
   const [currentUser, setCurrentUser] = useState<UserType>(INITIAL_USERS[0]);
   const [users] = useState<UserType[]>(INITIAL_USERS);
@@ -316,8 +326,16 @@ export default function MathTradeApp() {
   const tradesCalculated = trades.length > 0; // Lock data when trades exist
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Debug banner - only show when using mock data */}
+      {useMockGames && (
+        <div className="text-center py-1 text-xs font-mono bg-yellow-100 text-yellow-800">
+          ⚠️ USING MOCK GAME DATA
+        </div>
+      )}
+      
+      <div className="p-4">
+        <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -1264,6 +1282,7 @@ export default function MathTradeApp() {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
