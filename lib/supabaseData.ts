@@ -101,7 +101,8 @@ export function useGroups(userId: string | undefined) {
               .eq('group_id', group.id);
 
             return {
-              id: parseInt(group.id),
+              id: parseInt(group.id), // For display/compatibility
+              uuid: group.id, // Keep original UUID for database operations
               name: group.name,
               memberIds: members?.map(m => parseInt(m.user_id)) || [],
               adminIds: members?.filter(m => m.is_admin).map(m => parseInt(m.user_id)) || [],
@@ -229,7 +230,7 @@ export function useWants(groupId: number | null) {
 
 export async function createGame(
   userId: string,
-  groupId: number,
+  groupId: string, // UUID string, not number
   name: string,
   condition: string,
   comment: string
@@ -239,7 +240,7 @@ export async function createGame(
     .insert([
       {
         user_id: userId,
-        group_id: groupId,
+        group_id: groupId, // Pass UUID directly
         name,
         condition,
         comment,

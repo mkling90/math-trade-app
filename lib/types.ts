@@ -7,7 +7,8 @@ export interface User {
 }
 
 export interface Group {
-  id: number;
+  id: number; // For display/UI compatibility
+  uuid?: string; // Actual database UUID
   name: string;
   memberIds: number[];
   adminIds: number[];

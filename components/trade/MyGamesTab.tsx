@@ -56,7 +56,7 @@ export default function MyGamesTab() {
       try {
         await createGameDB(
           supabaseUser!.id,
-          currentGroup.id,
+          currentGroup.uuid || String(currentGroup.id), // Use UUID if available
           newGameName,
           newGameCondition,
           newGameComment
