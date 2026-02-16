@@ -16,6 +16,15 @@ export default function TradesTab() {
     setTrades
   } = useTradeApp();
   
+  // If no group selected
+  if (!currentGroup) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">No group selected. Create or join a group to calculate trades.</p>
+      </div>
+    );
+  }
+  
   const isAdmin = currentGroup.adminIds?.includes(currentUser.id) || currentUser.globalAdmin;
   
   const calculateTrades = () => {

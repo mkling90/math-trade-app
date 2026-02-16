@@ -62,59 +62,64 @@ export function useGroups(userId: string | undefined) {
     }
 
     async function fetchGroups() {
-      // Fetch groups where user is a member
-      const { data: memberData, error: memberError } = await supabase
-        .from('group_members')
-        .select('group_id')
-        .eq('user_id', userId);
+      try {
+        // Fetch groups where user is a member
+        const { data: memberData, error: memberError } = await supabase
+          .from('group_members')
+          .select('group_id')
+          .eq('user_id', userId);
 
-      if (memberError) {
-        console.error('Error fetching group memberships:', memberError);
+        if (memberError) {
+          console.error('Error fetching group memberships:', memberError);
+          setLoading(false);
+          return;
+        }
+
+        const groupIds = memberData.map(m => m.group_id);
+
+        if (groupIds.length === 0) {
+          setGroups([]);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch group details
+        const { data: groupsData, error: groupsError } = await supabase
+          .from('groups')
+          .select('*')
+          .in('id', groupIds);
+
+        if (groupsError) {
+          console.error('Error fetching groups:', groupsError);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch members and admins for each group
+        const groupsWithMembers = await Promise.all(
+          groupsData.map(async (group) => {
+            const { data: members } = await supabase
+              .from('group_members')
+              .select('user_id, is_admin')
+              .eq('group_id', group.id);
+
+            return {
+              id: parseInt(group.id),
+              name: group.name,
+              memberIds: members?.map(m => parseInt(m.user_id)) || [],
+              adminIds: members?.filter(m => m.is_admin).map(m => parseInt(m.user_id)) || [],
+              inviteCode: group.invite_code,
+              isPublic: group.is_public,
+            };
+          })
+        );
+
+        setGroups(groupsWithMembers);
+      } catch (error) {
+        console.error('Unexpected error in fetchGroups:', error);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      const groupIds = memberData.map(m => m.group_id);
-
-      if (groupIds.length === 0) {
-        setGroups([]);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch group details
-      const { data: groupsData, error: groupsError } = await supabase
-        .from('groups')
-        .select('*')
-        .in('id', groupIds);
-
-      if (groupsError) {
-        console.error('Error fetching groups:', groupsError);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch members and admins for each group
-      const groupsWithMembers = await Promise.all(
-        groupsData.map(async (group) => {
-          const { data: members } = await supabase
-            .from('group_members')
-            .select('user_id, is_admin')
-            .eq('group_id', group.id);
-
-          return {
-            id: parseInt(group.id),
-            name: group.name,
-            memberIds: members?.map(m => parseInt(m.user_id)) || [],
-            adminIds: members?.filter(m => m.is_admin).map(m => parseInt(m.user_id)) || [],
-            inviteCode: group.invite_code,
-            isPublic: group.is_public,
-          };
-        })
-      );
-
-      setGroups(groupsWithMembers);
-      setLoading(false);
     }
 
     fetchGroups();

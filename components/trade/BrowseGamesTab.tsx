@@ -9,6 +9,15 @@ export default function BrowseGamesTab() {
   const { currentUser, currentGroup, games, users } = useTradeApp();
   const [collapsedUsers, setCollapsedUsers] = useState<Set<number>>(new Set());
   
+  // If no group selected
+  if (!currentGroup) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">No group selected. Create or join a group to browse games.</p>
+      </div>
+    );
+  }
+  
   const otherGames = games.filter(g => g.userId !== currentUser.id && g.groupId === currentGroup.id);
   const otherUsersWithGames = users.filter(u => 
     u.id !== currentUser.id && 
