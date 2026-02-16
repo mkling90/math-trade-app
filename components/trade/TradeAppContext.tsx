@@ -15,8 +15,8 @@ interface TradeAppContextType {
   
   // Groups
   groups: Group[];
-  currentGroup: Group;
-  setCurrentGroup: (group: Group) => void;
+  currentGroup: Group | null;
+  setCurrentGroup: (group: Group | null) => void;
   setGroups: (groups: Group[]) => void;
   
   // Games
@@ -68,13 +68,17 @@ export function TradeAppProvider({ children, supabaseUser }: TradeAppProviderPro
     useMockGames ? undefined : supabaseUser?.id
   );
   
-  // State
-  const [currentUser, setCurrentUser] = useState<User>(INITIAL_USERS[0]);
-  const [users] = useState<User[]>(INITIAL_USERS);
-  const [groups, setGroups] = useState<Group[]>(INITIAL_GROUPS);
-  const [currentGroup, setCurrentGroup] = useState<Group>(INITIAL_GROUPS[0]);
-  const [games, setGames] = useState<Game[]>(INITIAL_GAMES);
-  const [wants, setWants] = useState<Want[]>(INITIAL_WANTS);
+  // State - initialize based on mode
+  const [currentUser, setCurrentUser] = useState<User>(
+    useMockGames ? INITIAL_USERS[0] : { id: 0, name: '', globalAdmin: false }
+  );
+  const [users] = useState<User[]>(useMockGames ? INITIAL_USERS : []);
+  const [groups, setGroups] = useState<Group[]>(useMockGames ? INITIAL_GROUPS : []);
+  const [currentGroup, setCurrentGroup] = useState<Group | null>(
+    useMockGames ? INITIAL_GROUPS[0] : null
+  );
+  const [games, setGames] = useState<Game[]>(useMockGames ? INITIAL_GAMES : []);
+  const [wants, setWants] = useState<Want[]>(useMockGames ? INITIAL_WANTS : []);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [activeTab, setActiveTab] = useState('my-games');
   

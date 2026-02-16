@@ -25,6 +25,15 @@ export default function MyGamesTab() {
   const [newGameComment, setNewGameComment] = useState('');
   const [editingGameId, setEditingGameId] = useState<number | null>(null);
   
+  // If no group selected, show message
+  if (!currentGroup) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">No group selected. Create or join a group to get started!</p>
+      </div>
+    );
+  }
+  
   const myGames = games.filter(g => g.userId === currentUser.id && g.groupId === currentGroup.id);
   const tradesCalculated = trades.length > 0;
   
