@@ -84,10 +84,10 @@ export function TradeAppProvider({ children, supabaseUser }: TradeAppProviderPro
   
   // Supabase data for current group
   const { games: supabaseGames, loading: gamesLoading } = useGames(
-    useMockGames ? null : currentGroup?.id
+    useMockGames ? null : (currentGroup?.id ?? null)
   );
   const { wants: supabaseWants, loading: wantsLoading } = useWants(
-    useMockGames ? null : currentGroup?.id
+    useMockGames ? null : (currentGroup?.id ?? null)
   );
   
   // Sync Supabase data when loaded
