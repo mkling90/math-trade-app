@@ -18,6 +18,11 @@ export function useProfile(supabaseUser: SupabaseUser | null) {
     }
 
     async function fetchProfile() {
+      if (!supabaseUser) {
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
