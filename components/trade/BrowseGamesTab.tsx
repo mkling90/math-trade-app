@@ -7,7 +7,7 @@ import GameCard from './GameCard';
 
 export default function BrowseGamesTab() {
   const { currentUser, currentGroup, games, users } = useTradeApp();
-  const [collapsedUsers, setCollapsedUsers] = useState<Set<number>>(new Set());
+  const [collapsedUsers, setCollapsedUsers] = useState<Set<string | number>>(new Set());
   
   // If no group selected
   if (!currentGroup) {
@@ -18,13 +18,13 @@ export default function BrowseGamesTab() {
     );
   }
   
-  const otherGames = games.filter(g => g.userId !== currentUser.id && g.groupId === currentGroup.id);
+  const otherGames = games.filter(g => String(g.userId) !== String(currentUser.id) && String(g.groupId) === String(currentGroup.id));
   const otherUsersWithGames = users.filter(u => 
-    u.id !== currentUser.id && 
-    otherGames.some(g => g.userId === u.id)
+    String(u.id) !== String(currentUser.id) && 
+    otherGames.some(g => String(g.userId) === String(u.id))
   );
   
-  const toggleUserCollapse = (userId: number) => {
+  const toggleUserCollapse = (userId: string | number) => {
     const newCollapsed = new Set(collapsedUsers);
     if (newCollapsed.has(userId)) {
       newCollapsed.delete(userId);
@@ -48,7 +48,7 @@ export default function BrowseGamesTab() {
       <h3 className="font-semibold text-gray-700">Other Users' Games</h3>
       
       {otherUsersWithGames.map(user => {
-        const userGames = otherGames.filter(g => g.userId === user.id);
+        const userGames = otherGames.filter(g => String(g.userId) === String(user.id));
         const isCollapsed = collapsedUsers.has(user.id);
         
         return (

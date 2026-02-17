@@ -22,7 +22,7 @@ export default function CreateGroupModal({ onClose }: CreateGroupModalProps) {
     if (useMockGames) {
       // Mock mode
       const newGroup = {
-        id: Math.max(...groups.map(g => g.id)) + 1,
+        id: Math.max(...groups.map(g => typeof g.id === 'number' ? g.id : 0), 0) + 1,
         name: groupName,
         memberIds: [1], // Current user mock ID
         adminIds: [1],

@@ -41,5 +41,5 @@ export interface Trade {
   id: number;
   chain: TradeStep[];
   type: 'direct' | 'circular';
-  involvedUserIds: number[]; // Track which users are involved in this trade
+  involvedUserIds: (string | number)[]; // Track which users are involved in this trade
 }

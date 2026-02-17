@@ -25,7 +25,7 @@ export default function TradesTab() {
     );
   }
   
-  const isAdmin = currentGroup.adminIds?.includes(currentUser.id) || currentUser.globalAdmin;
+  const isAdmin = currentGroup.adminIds?.some(id => String(id) === String(currentUser.id)) || currentUser.globalAdmin;
   
   const calculateTrades = () => {
     console.log('Calculating trades for group:', currentGroup.name);
@@ -46,15 +46,15 @@ export default function TradesTab() {
   
   // Sort trades: user's trades first
   const sortedTrades = [...trades].sort((a, b) => {
-    const aHasUser = a.involvedUserIds.includes(currentUser.id);
-    const bHasUser = b.involvedUserIds.includes(currentUser.id);
+    const aHasUser = a.involvedUserIds.some(id => String(id) === String(currentUser.id));
+    const bHasUser = b.involvedUserIds.some(id => String(id) === String(currentUser.id));
     if (aHasUser && !bHasUser) return -1;
     if (!aHasUser && bHasUser) return 1;
     return 0;
   });
   
   // Calculate user's trade summary
-  const myTrades = trades.filter(t => t.involvedUserIds.includes(currentUser.id));
+  const myTrades = trades.filter(t => t.involvedUserIds.some(id => String(id) === String(currentUser.id)));
   const giving: Array<{game: string, to: string}> = [];
   const getting: Array<{game: string, from: string}> = [];
   
@@ -186,7 +186,7 @@ export default function TradesTab() {
           {/* All trades */}
           <div className="space-y-4">
             {sortedTrades.map(trade => {
-              const isUserTrade = trade.involvedUserIds.includes(currentUser.id);
+              const isUserTrade = trade.involvedUserIds.some(id => String(id) === String(currentUser.id));
               
               return (
                 <div

@@ -128,7 +128,7 @@ export function useGroups(userId: string | undefined) {
 /**
  * Hook to fetch all games in a group
  */
-export function useGames(groupId: number | null) {
+export function useGames(groupId: string | null) {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -165,30 +165,29 @@ export function useGames(groupId: number | null) {
     fetchGames();
   }, [groupId]);
 
-  const refetch = () => {
+  const refetch = async () => {
     if (groupId) {
       setLoading(true);
-      const { data, error } = supabase
+      const { data, error } = await supabase
         .from('games')
         .select('*')
-        .eq('group_id', groupId)
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('Error fetching games:', error);
-          } else if (data) {
-            setGames(
-              data.map(game => ({
-                id: game.id,
-                userId: game.user_id,
-                groupId: game.group_id,
-                name: game.name,
-                condition: game.condition,
-                comment: game.comment || '',
-              }))
-            );
-          }
-          setLoading(false);
-        });
+        .eq('group_id', groupId);
+      
+      if (error) {
+        console.error('Error fetching games:', error);
+      } else if (data) {
+        setGames(
+          data.map(game => ({
+            id: game.id,
+            userId: game.user_id,
+            groupId: game.group_id,
+            name: game.name,
+            condition: game.condition,
+            comment: game.comment || '',
+          }))
+        );
+      }
+      setLoading(false);
     }
   };
 
@@ -247,41 +246,40 @@ export function useWants(groupId: string | null) {
     fetchWants();
   }, [groupId]);
 
-  const refetch = () => {
+  const refetch = async () => {
     if (groupId) {
       setLoading(true);
-      supabase
+      
+      const { data: gamesData } = await supabase
         .from('games')
         .select('id')
-        .eq('group_id', groupId)
-        .then(({ data: gamesData }) => {
-          if (!gamesData || gamesData.length === 0) {
-            setWants([]);
-            setLoading(false);
-            return;
-          }
+        .eq('group_id', groupId);
+      
+      if (!gamesData || gamesData.length === 0) {
+        setWants([]);
+        setLoading(false);
+        return;
+      }
 
-          const gameIds = gamesData.map(g => g.id);
+      const gameIds = gamesData.map(g => g.id);
 
-          supabase
-            .from('wants')
-            .select('*')
-            .in('my_game_id', gameIds)
-            .then(({ data, error }) => {
-              if (error) {
-                console.error('Error fetching wants:', error);
-              } else if (data) {
-                setWants(
-                  data.map(want => ({
-                    myGameId: want.my_game_id,
-                    acceptGameId: want.accept_game_id,
-                    rank: want.rank,
-                  }))
-                );
-              }
-              setLoading(false);
-            });
-        });
+      const { data, error } = await supabase
+        .from('wants')
+        .select('*')
+        .in('my_game_id', gameIds);
+      
+      if (error) {
+        console.error('Error fetching wants:', error);
+      } else if (data) {
+        setWants(
+          data.map(want => ({
+            myGameId: want.my_game_id,
+            acceptGameId: want.accept_game_id,
+            rank: want.rank,
+          }))
+        );
+      }
+      setLoading(false);
     }
   };
 
@@ -317,7 +315,7 @@ export async function createGame(
   return data;
 }
 
-export async function deleteGame(gameId: number) {
+export async function deleteGame(gameId: string | number) {
   const { error } = await supabase
     .from('games')
     .delete()
@@ -326,7 +324,7 @@ export async function deleteGame(gameId: number) {
   if (error) throw error;
 }
 
-export async function createWant(myGameId: number, acceptGameId: number, rank: number) {
+export async function createWant(myGameId: string | number, acceptGameId: string | number, rank: number) {
   const { error } = await supabase
     .from('wants')
     .insert([{ my_game_id: myGameId, accept_game_id: acceptGameId, rank }]);
@@ -334,7 +332,7 @@ export async function createWant(myGameId: number, acceptGameId: number, rank: n
   if (error) throw error;
 }
 
-export async function deleteWant(myGameId: number, acceptGameId: number) {
+export async function deleteWant(myGameId: string | number, acceptGameId: string | number) {
   const { error } = await supabase
     .from('wants')
     .delete()
@@ -344,7 +342,7 @@ export async function deleteWant(myGameId: number, acceptGameId: number) {
   if (error) throw error;
 }
 
-export async function updateWantRank(myGameId: number, acceptGameId: number, rank: number) {
+export async function updateWantRank(myGameId: string | number, acceptGameId: string | number, rank: number) {
   const { error } = await supabase
     .from('wants')
     .update({ rank })
@@ -394,37 +392,35 @@ export function useGroupMembers(memberIds: (string | number)[] | undefined) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
+
     if (!memberIds || memberIds.length === 0) {
       setMembers([]);
       setLoading(false);
       return;
     }
 
-    async function fetchMembers() {
-      // Convert memberIds to strings (UUIDs)
-      const stringIds = memberIds.map(id => String(id));
+    const stringIds = memberIds.map(id => String(id));
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, name, global_admin')
-        .in('id', stringIds);
-
-      if (error) {
-        console.error('Error fetching group members:', error);
-      } else if (data) {
-        setMembers(
-          data.map(profile => ({
-            id: profile.id,
-            name: profile.name,
-            globalAdmin: profile.global_admin || false,
-          }))
-        );
-      }
-      setLoading(false);
-    }
-
-    fetchMembers();
-  }, [JSON.stringify(memberIds)]); // Use JSON.stringify for array comparison
+    supabase
+      .from('profiles')
+      .select('id, name, global_admin')
+      .in('id', stringIds)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching group members:', error);
+        } else if (data) {
+          setMembers(
+            data.map(profile => ({
+              id: profile.id,
+              name: profile.name || 'Unknown',
+              globalAdmin: profile.global_admin || false,
+            }))
+          );
+        }
+        setLoading(false);
+      });
+  }, [JSON.stringify(memberIds)]);
 
   return { members, loading };
 }

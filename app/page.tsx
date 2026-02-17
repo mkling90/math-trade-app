@@ -1,4 +1,4 @@
-import MathTradeApp from '@/components/MathTradeApp';
+import MathTradeApp from '@/components/MathTradeApp-New';
 import Auth from '@/components/Auth';
 
 export default function Home() {

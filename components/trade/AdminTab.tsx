@@ -15,7 +15,7 @@ export default function AdminTab() {
     );
   }
   
-  const isAdmin = currentGroup.adminIds?.includes(currentUser.id) || currentUser.globalAdmin;
+  const isAdmin = currentGroup.adminIds?.some(id => String(id) === String(currentUser.id)) || currentUser.globalAdmin;
   
   if (!isAdmin) {
     return (
@@ -25,26 +25,26 @@ export default function AdminTab() {
     );
   }
   
-  const members = users.filter(u => currentGroup.memberIds.includes(u.id));
+  const members = users.filter(u => currentGroup.memberIds.some(id => String(id) === String(u.id)));
   
-  const makeAdmin = (userId: number) => {
+  const makeAdmin = (userId: string | number) => {
     // TODO: Implement with Supabase
-    alert(`Make ${users.find(u => u.id === userId)?.name} admin`);
+    alert(`Make ${users.find(u => String(u.id) === String(userId))?.name} admin`);
   };
   
-  const removeAdmin = (userId: number) => {
+  const removeAdmin = (userId: string | number) => {
     // TODO: Implement with Supabase
     const adminCount = currentGroup.adminIds?.length || 0;
     if (adminCount <= 1) {
       alert('Cannot remove the last admin');
       return;
     }
-    alert(`Remove ${users.find(u => u.id === userId)?.name} as admin`);
+    alert(`Remove ${users.find(u => String(u.id) === String(userId))?.name} as admin`);
   };
   
-  const removeMember = (userId: number) => {
+  const removeMember = (userId: string | number) => {
     // TODO: Implement with Supabase
-    alert(`Remove ${users.find(u => u.id === userId)?.name} from group`);
+    alert(`Remove ${users.find(u => String(u.id) === String(userId))?.name} from group`);
   };
   
   return (
@@ -64,9 +64,9 @@ export default function AdminTab() {
         
         <div className="divide-y">
           {members.map(member => {
-            const memberGames = games.filter(g => g.userId === member.id && g.groupId === currentGroup.id);
-            const isMemberAdmin = currentGroup.adminIds?.includes(member.id);
-            const isCurrentUser = member.id === currentUser.id;
+            const memberGames = games.filter(g => String(g.userId) === String(member.id) && String(g.groupId) === String(currentGroup.id));
+            const isMemberAdmin = currentGroup.adminIds?.some(id => String(id) === String(member.id));
+            const isCurrentUser = String(member.id) === String(currentUser.id);
             
             return (
               <div key={member.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">

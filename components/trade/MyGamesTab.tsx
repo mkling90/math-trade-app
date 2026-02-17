@@ -24,7 +24,7 @@ export default function MyGamesTab() {
   const [newGameName, setNewGameName] = useState('');
   const [newGameCondition, setNewGameCondition] = useState('Good');
   const [newGameComment, setNewGameComment] = useState('');
-  const [editingGameId, setEditingGameId] = useState<number | null>(null);
+  const [editingGameId, setEditingGameId] = useState<string | number | null>(null);
   
   // If no group selected, show message
   if (!currentGroup) {
@@ -35,7 +35,7 @@ export default function MyGamesTab() {
     );
   }
   
-  const myGames = games.filter(g => g.userId === currentUser.id && g.groupId === currentGroup.id);
+  const myGames = games.filter(g => String(g.userId) === String(currentUser.id) && String(g.groupId) === String(currentGroup.id));
   const tradesCalculated = trades.length > 0;
   
   const addGame = async () => {
@@ -44,7 +44,7 @@ export default function MyGamesTab() {
     if (useMockGames) {
       // Mock mode
       const newGame = {
-        id: Math.max(...games.map(g => g.id), 0) + 1,
+        id: Math.max(...games.map(g => typeof g.id === 'number' ? g.id : 0), 0) + 1,
         userId: currentUser.id,
         groupId: currentGroup.id,
         name: newGameName,
@@ -73,11 +73,11 @@ export default function MyGamesTab() {
     setNewGameComment('');
   };
   
-  const deleteGame = async (gameId: number) => {
+  const deleteGame = async (gameId: string | number) => {
     if (useMockGames) {
       // Mock mode
-      setGames(games.filter(g => g.id !== gameId));
-      setWants(wants.filter(w => w.myGameId !== gameId && w.acceptGameId !== gameId));
+      setGames(games.filter(g => String(g.id) !== String(gameId)));
+      setWants(wants.filter(w => String(w.myGameId) !== String(gameId) && String(w.acceptGameId) !== String(gameId)));
     } else {
       // Real database mode
       try {
@@ -165,8 +165,8 @@ export default function MyGamesTab() {
                 key={game.id}
                 game={game}
                 isOwner={true}
-                isEditing={editingGameId === game.id}
-                onSetWants={() => setEditingGameId(editingGameId === game.id ? null : game.id)}
+                isEditing={String(editingGameId) === String(game.id)}
+                onSetWants={() => setEditingGameId(String(editingGameId) === String(game.id) ? null : game.id)}
                 onDelete={() => deleteGame(game.id)}
                 disabled={tradesCalculated}
               />

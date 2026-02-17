@@ -6,7 +6,7 @@ import { useTradeApp } from './TradeAppContext';
 import { createWant, deleteWant, updateWantRank } from '@/lib/supabaseData';
 
 interface SetWantsModalProps {
-  gameId: number;
+  gameId: string | number;
   onClose: () => void;
 }
 
@@ -30,8 +30,8 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
     return null;
   }
   
-  const game = games.find(g => g.id === gameId);
-  const myWants = wants.filter(w => w.myGameId === gameId).sort((a, b) => a.rank - b.rank);
+  const game = games.find(g => String(g.id) === String(gameId));
+  const myWants = wants.filter(w => String(w.myGameId) === String(gameId)).sort((a, b) => a.rank - b.rank);
   
   const availableGames = games.filter(g => 
     g.groupId === currentGroup.id && 
@@ -49,24 +49,24 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
     });
   }, [availableGames, filterUser, searchTerm]);
   
-  const toggleWant = async (acceptGameId: number) => {
-    const existing = wants.find(w => w.myGameId === gameId && w.acceptGameId === acceptGameId);
+  const toggleWant = async (acceptGameId: string | number) => {
+    const existing = wants.find(w => String(w.myGameId) === String(gameId) && String(w.acceptGameId) === String(acceptGameId));
     
     if (useMockGames) {
       // Mock mode
       if (existing) {
         const removedRank = existing.rank;
         setWants(wants
-          .filter(w => !(w.myGameId === gameId && w.acceptGameId === acceptGameId))
+          .filter(w => !(String(w.myGameId) === String(gameId) && String(w.acceptGameId) === String(acceptGameId)))
           .map(w => {
-            if (w.myGameId === gameId && w.rank > removedRank) {
+            if (String(w.myGameId) === String(gameId) && w.rank > removedRank) {
               return { ...w, rank: w.rank - 1 };
             }
             return w;
           })
         );
       } else {
-        const existingWants = wants.filter(w => w.myGameId === gameId);
+        const existingWants = wants.filter(w => String(w.myGameId) === String(gameId));
         const nextRank = existingWants.length > 0 
           ? Math.max(...existingWants.map(w => w.rank)) + 1 
           : 1;
@@ -90,9 +90,9 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
         if (existing) {
           const removedRank = existing.rank;
           setWants(wants
-            .filter(w => !(w.myGameId === gameId && w.acceptGameId === acceptGameId))
+            .filter(w => !(String(w.myGameId) === String(gameId) && String(w.acceptGameId) === String(acceptGameId)))
             .map(w => {
-              if (w.myGameId === gameId && w.rank > removedRank) {
+              if (String(w.myGameId) === String(gameId) && w.rank > removedRank) {
                 return { ...w, rank: w.rank - 1 };
               }
               return w;
@@ -113,15 +113,15 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
     }
   };
   
-  const moveWantUp = async (acceptGameId: number) => {
-    const want = myWants.find(w => w.acceptGameId === acceptGameId);
+  const moveWantUp = async (acceptGameId: string | number) => {
+    const want = myWants.find(w => String(w.acceptGameId) === String(acceptGameId));
     if (!want || want.rank === 1) return;
     
     if (useMockGames) {
       // Mock mode
       setWants(wants.map(w => {
-        if (w.myGameId === gameId) {
-          if (w.acceptGameId === acceptGameId) {
+        if (String(w.myGameId) === String(gameId)) {
+          if (String(w.acceptGameId) === String(acceptGameId)) {
             return { ...w, rank: w.rank - 1 };
           } else if (w.rank === want.rank - 1) {
             return { ...w, rank: w.rank + 1 };
@@ -135,8 +135,8 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
       if (swapWith) {
         // Update UI immediately
         setWants(wants.map(w => {
-          if (w.myGameId === gameId) {
-            if (w.acceptGameId === acceptGameId) {
+          if (String(w.myGameId) === String(gameId)) {
+            if (String(w.acceptGameId) === String(acceptGameId)) {
               return { ...w, rank: w.rank - 1 };
             } else if (w.rank === want.rank - 1) {
               return { ...w, rank: w.rank + 1 };
@@ -157,16 +157,16 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
     }
   };
   
-  const moveWantDown = async (acceptGameId: number) => {
-    const want = myWants.find(w => w.acceptGameId === acceptGameId);
+  const moveWantDown = async (acceptGameId: string | number) => {
+    const want = myWants.find(w => String(w.acceptGameId) === String(acceptGameId));
     const maxRank = Math.max(...myWants.map(w => w.rank));
     if (!want || want.rank === maxRank) return;
     
     if (useMockGames) {
       // Mock mode
       setWants(wants.map(w => {
-        if (w.myGameId === gameId) {
-          if (w.acceptGameId === acceptGameId) {
+        if (String(w.myGameId) === String(gameId)) {
+          if (String(w.acceptGameId) === String(acceptGameId)) {
             return { ...w, rank: w.rank + 1 };
           } else if (w.rank === want.rank + 1) {
             return { ...w, rank: w.rank - 1 };
@@ -180,8 +180,8 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
       if (swapWith) {
         // Update UI immediately
         setWants(wants.map(w => {
-          if (w.myGameId === gameId) {
-            if (w.acceptGameId === acceptGameId) {
+          if (String(w.myGameId) === String(gameId)) {
+            if (String(w.acceptGameId) === String(acceptGameId)) {
               return { ...w, rank: w.rank + 1 };
             } else if (w.rank === want.rank + 1) {
               return { ...w, rank: w.rank - 1 };
