@@ -115,17 +115,17 @@ export default function MyGamesTab() {
                 placeholder="Game name (e.g., Carcassonne)"
                 value={newGameName}
                 onChange={(e) => setNewGameName(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 placeholder-gray-500"
               />
               <select
                 value={newGameCondition}
                 onChange={(e) => setNewGameCondition(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900"
               >
-                <option>New In Shrink</option>
-                <option>Excellent</option>
-                <option>Good</option>
-                <option>Fair</option>
+                <option className="text-gray-900">New In Shrink</option>
+                <option className="text-gray-900">Excellent</option>
+                <option className="text-gray-900">Good</option>
+                <option className="text-gray-900">Fair</option>
               </select>
             </div>
             <div className="flex gap-3">
@@ -134,7 +134,7 @@ export default function MyGamesTab() {
                 placeholder="Comment (optional - e.g., 'Includes expansion', 'Minor box wear')"
                 value={newGameComment}
                 onChange={(e) => setNewGameComment(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                 onKeyPress={(e) => e.key === 'Enter' && addGame()}
               />
               <button

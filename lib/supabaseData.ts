@@ -111,7 +111,12 @@ export function useGroups(userId: string | undefined) {
           })
         );
 
-        setGroups(groupsWithMembers);
+        // Filter: Only show groups where user is a member OR group is public
+        const filteredGroups = groupsWithMembers.filter(group => 
+          group.memberIds.some(id => String(id) === String(userId)) || group.isPublic
+        );
+
+        setGroups(filteredGroups);
       } catch (error) {
         console.error('Unexpected error in fetchGroups:', error);
       } finally {
