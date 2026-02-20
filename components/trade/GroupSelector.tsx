@@ -60,10 +60,10 @@ export default function GroupSelector() {
             const group = groups.find(g => g.id.toString() === e.target.value);
             if (group) setCurrentGroup(group);
           }}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900"
         >
           {groups.map(group => (
-            <option key={group.id.toString()} value={group.id.toString()}>
+            <option key={group.id.toString()} value={group.id.toString()} className="text-gray-900">
               {group.name} ({group.memberIds.length} members) {group.inviteCode ? `- ${group.inviteCode}` : ''}
             </option>
           ))}
@@ -75,7 +75,7 @@ export default function GroupSelector() {
           title="Copy invite code to clipboard"
         >
           {copied ? <Check size={16} /> : <Copy size={16} />}
-          
+          {copied ? 'Copied!' : 'Copy Code'}
         </button>
         <button
           onClick={() => setShowJoinModal(true)}
