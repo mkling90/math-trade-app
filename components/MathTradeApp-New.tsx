@@ -13,7 +13,7 @@ interface MathTradeAppProps {
 }
 
 function MathTradeAppContent() {
-  const { activeTab, setActiveTab, currentUser, useMockGames, loading } = useTradeApp();
+  const { activeTab, setActiveTab, currentUser, currentGroup, useMockGames, loading } = useTradeApp();
   
   const tabs = [
     { id: 'my-games', label: 'My Games', component: MyGamesTab },
@@ -83,30 +83,32 @@ function MathTradeAppContent() {
             <GroupSelector />
           </div>
           
-          {/* Tabs */}
-          <div className="bg-white rounded-lg shadow-lg mb-6">
-            <div className="border-b border-gray-200">
-              <nav className="flex">
-                {tabs.map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`px-6 py-4 text-sm font-medium transition-colors ${
-                      activeTab === tab.id
-                        ? 'border-b-2 border-indigo-600 text-indigo-600'
-                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </nav>
+          {/* Only show tabs if user is in a group */}
+          {currentGroup && (
+            <div className="bg-white rounded-lg shadow-lg mb-6">
+              <div className="border-b border-gray-200">
+                <nav className="flex">
+                  {tabs.map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-6 py-4 text-sm font-medium transition-colors ${
+                        activeTab === tab.id
+                          ? 'border-b-2 border-indigo-600 text-indigo-600'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+              
+              <div className="p-6">
+                <ActiveComponent />
+              </div>
             </div>
-            
-            <div className="p-6">
-              <ActiveComponent />
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

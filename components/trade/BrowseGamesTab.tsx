@@ -19,10 +19,9 @@ export default function BrowseGamesTab() {
   }
   
   const otherGames = games.filter(g => String(g.userId) !== String(currentUser.id) && String(g.groupId) === String(currentGroup.id));
-  const otherUsersWithGames = users.filter(u => 
-    String(u.id) !== String(currentUser.id) && 
-    otherGames.some(g => String(g.userId) === String(u.id))
-  );
+  
+  // Show ALL other users in the group, not just those with games
+  const otherUsers = users.filter(u => String(u.id) !== String(currentUser.id));
   
   const toggleUserCollapse = (userId: string | number) => {
     const newCollapsed = new Set(collapsedUsers);
@@ -34,10 +33,10 @@ export default function BrowseGamesTab() {
     setCollapsedUsers(newCollapsed);
   };
   
-  if (otherUsersWithGames.length === 0) {
+  if (otherUsers.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No other users have added games yet.</p>
+        <p className="text-gray-500">No other users in this group yet.</p>
         <p className="text-sm text-gray-400 mt-2">Invite others to join your group!</p>
       </div>
     );
@@ -47,7 +46,7 @@ export default function BrowseGamesTab() {
     <div className="space-y-4">
       <h3 className="font-semibold text-gray-700">Other Users' Games</h3>
       
-      {otherUsersWithGames.map(user => {
+      {otherUsers.map(user => {
         const userGames = otherGames.filter(g => String(g.userId) === String(user.id));
         const isCollapsed = collapsedUsers.has(user.id);
         
@@ -66,13 +65,17 @@ export default function BrowseGamesTab() {
             
             {!isCollapsed && (
               <div className="px-4 pb-4 space-y-3">
-                {userGames.map(game => (
-                  <GameCard
-                    key={game.id}
-                    game={game}
-                    isOwner={false}
-                  />
-                ))}
+                {userGames.length > 0 ? (
+                  userGames.map(game => (
+                    <GameCard
+                      key={game.id}
+                      game={game}
+                      isOwner={false}
+                    />
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400 italic py-2">No games added yet</p>
+                )}
               </div>
             )}
           </div>

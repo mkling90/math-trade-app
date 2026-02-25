@@ -111,9 +111,9 @@ export function useGroups(userId: string | undefined) {
           })
         );
 
-        // Filter: Only show groups where user is a member OR group is public
+        // Filter: Only show groups where user is a member
         const filteredGroups = groupsWithMembers.filter(group => 
-          group.memberIds.some(id => String(id) === String(userId)) || group.isPublic
+          group.memberIds.some(id => String(id) === String(userId))
         );
 
         setGroups(filteredGroups);
