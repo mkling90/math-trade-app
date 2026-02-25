@@ -288,11 +288,11 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
                     setFilterUser(matchingUser?.id || value);
                   }
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 text-gray-900"
               >
-                <option value="all">All Users</option>
+                <option value="all" className="text-gray-900">All Users</option>
                 {otherUsers.map(u => (
-                  <option key={String(u.id)} value={String(u.id)}>{u.name}</option>
+                  <option key={String(u.id)} value={String(u.id)} className="text-gray-900">{u.name}</option>
                 ))}
               </select>
             </div>
@@ -303,7 +303,7 @@ export default function SetWantsModal({ gameId, onClose }: SetWantsModalProps) {
                 placeholder="Game name or comment..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-500"
               />
             </div>
             {(filterUser !== 'all' || searchTerm) && (
