@@ -24,7 +24,7 @@ export default function GroupSelector() {
   if (groups.length === 0) {
     return (
       <>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-yellow-800 font-medium mb-2">No groups yet!</p>
           <p className="text-sm text-yellow-700 mb-3">Create a new group or join an existing one to get started.</p>
           <div className="flex gap-2">
@@ -52,49 +52,48 @@ export default function GroupSelector() {
   
   return (
     <>
-      <div className="mb-6">
-        {/* Dropdown and Copy Code - always together */}
-        <div className="flex items-center gap-3 mb-3">
-          <Users className="text-indigo-600 flex-shrink-0" />
-          <select
-            value={currentGroup?.id?.toString() || ''}
-            onChange={(e) => {
-              const group = groups.find(g => g.id.toString() === e.target.value);
-              if (group) setCurrentGroup(group);
-            }}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900"
-          >
-            {groups.map(group => (
-              <option key={group.id.toString()} value={group.id.toString()} className="text-gray-900">
-                {group.name} ({group.memberIds.length} members) {group.inviteCode ? `- ${group.inviteCode}` : ''}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Compact group selector */}
+      <div className="flex items-center gap-2">
+        <label className="text-xs font-medium text-gray-600 whitespace-nowrap">Select Group:</label>
+        <select
+          value={currentGroup?.id?.toString() || ''}
+          onChange={(e) => {
+            const group = groups.find(g => g.id.toString() === e.target.value);
+            if (group) setCurrentGroup(group);
+          }}
+          className="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 text-sm"
+        >
+          {groups.map(group => (
+            <option key={group.id.toString()} value={group.id.toString()} className="text-gray-900">
+              {group.name}
+            </option>
+          ))}
+        </select>
         
-        {/* Action buttons - stack on mobile */}
-        <div className="flex flex-wrap gap-2">
+        {/* Action buttons */}
+        <div className="flex gap-1">
           <button
             onClick={copyInviteCode}
             disabled={!currentGroup?.inviteCode}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm flex items-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            title="Copy invite code to clipboard"
+            className="px-2 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs flex items-center gap-1 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            title="Copy invite code"
           >
-            {copied ? <Check size={16} /> : <Copy size={16} />}
-
+            {copied ? <Check size={12} /> : <Copy size={12} />}
           </button>
           <button
             onClick={() => setShowJoinModal(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+            className="px-2 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs"
+            title="Join another group"
           >
-            Join Group
+            Join
           </button>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 text-sm"
+            className="px-2 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1 text-xs"
+            title="Create new group"
           >
-            <Plus size={16} />
-            New Group
+            <Plus size={12} />
+            New
           </button>
         </div>
       </div>

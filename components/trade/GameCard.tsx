@@ -10,6 +10,7 @@ interface GameCardProps {
   onSetWants?: () => void;
   onDelete?: () => void;
   disabled?: boolean;
+  isDeleting?: boolean;
 }
 
 export default function GameCard({
@@ -18,7 +19,8 @@ export default function GameCard({
   isEditing = false,
   onSetWants,
   onDelete,
-  disabled = false
+  disabled = false,
+  isDeleting = false
 }: GameCardProps) {
   const { users, wants, games } = useTradeApp(); // Get games here
   
@@ -63,21 +65,25 @@ export default function GameCard({
             {onDelete && (
               <button
                 onClick={() => {
-                  if (disabled) {
+                  if (disabled && !isDeleting) {
                     alert('Trades have been calculated. Games are locked.');
                     return;
                   }
-                  onDelete();
+                  if (!isDeleting) onDelete();
                 }}
                 disabled={disabled}
-                className={`px-3 py-2 rounded-lg transition-colors ${
+                className={`px-3 py-2 rounded-lg transition-colors flex items-center justify-center ${
                   disabled
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-red-500 text-white hover:bg-red-600'
                 }`}
                 title="Delete game"
               >
-                <X size={20} />
+                {isDeleting ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                ) : (
+                  <X size={20} />
+                )}
               </button>
             )}
           </div>

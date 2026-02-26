@@ -6,6 +6,7 @@ import { useTradeApp } from './TradeAppContext';
 import GameCard from './GameCard';
 import SetWantsModal from './SetWantsModal';
 import { createGame as createGameDB, deleteGame as deleteGameDB } from '@/lib/supabaseData';
+import { useToast } from '../ToastProvider';
 
 export default function MyGamesTab() {
   const { 
@@ -21,10 +22,14 @@ export default function MyGamesTab() {
     refetchGames
   } = useTradeApp();
   
+  const { showToast } = useToast();
+  
   const [newGameName, setNewGameName] = useState('');
   const [newGameCondition, setNewGameCondition] = useState('Good');
   const [newGameComment, setNewGameComment] = useState('');
   const [editingGameId, setEditingGameId] = useState<string | number | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | number | null>(null);
   
   // If no group selected, show message
   if (!currentGroup) {
@@ -41,6 +46,8 @@ export default function MyGamesTab() {
   const addGame = async () => {
     if (!newGameName.trim()) return;
     
+    setIsAdding(true);
+    
     if (useMockGames) {
       // Mock mode
       const newGame = {
@@ -52,6 +59,7 @@ export default function MyGamesTab() {
         comment: newGameComment,
       };
       setGames([...games, newGame]);
+      showToast(`Added "${newGameName}"`, 'success');
     } else {
       // Real database mode
       try {
@@ -64,30 +72,39 @@ export default function MyGamesTab() {
         );
         // Refresh the games list
         if (refetchGames) refetchGames();
+        showToast(`Added "${newGameName}"`, 'success');
       } catch (error: any) {
-        alert('Error adding game: ' + error.message);
+        showToast(`Error adding game: ${error.message}`, 'error');
       }
     }
     
+    // Reset form
     setNewGameName('');
     setNewGameComment('');
+    setIsAdding(false);
   };
   
   const deleteGame = async (gameId: string | number) => {
+    setDeletingId(gameId);
+    
     if (useMockGames) {
       // Mock mode
       setGames(games.filter(g => String(g.id) !== String(gameId)));
       setWants(wants.filter(w => String(w.myGameId) !== String(gameId) && String(w.acceptGameId) !== String(gameId)));
+      showToast('Game deleted', 'success');
     } else {
       // Real database mode
       try {
         await deleteGameDB(gameId);
         // Refresh the games list
         if (refetchGames) refetchGames();
+        showToast('Game deleted', 'success');
       } catch (error: any) {
-        alert('Error deleting game: ' + error.message);
+        showToast(`Error deleting game: ${error.message}`, 'error');
       }
     }
+    
+    setDeletingId(null);
   };
   
   return (
@@ -139,10 +156,20 @@ export default function MyGamesTab() {
               />
               <button
                 onClick={addGame}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+                disabled={isAdding || !newGameName.trim()}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                <Plus size={20} />
-                Add
+                {isAdding ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <Plus size={20} />
+                    Add
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -168,7 +195,8 @@ export default function MyGamesTab() {
                 isEditing={String(editingGameId) === String(game.id)}
                 onSetWants={() => setEditingGameId(String(editingGameId) === String(game.id) ? null : game.id)}
                 onDelete={() => deleteGame(game.id)}
-                disabled={tradesCalculated}
+                disabled={tradesCalculated || String(deletingId) === String(game.id)}
+                isDeleting={String(deletingId) === String(game.id)}
               />
             ))}
           </div>

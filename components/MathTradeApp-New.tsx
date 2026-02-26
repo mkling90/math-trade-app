@@ -3,6 +3,7 @@
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { TradeAppProvider, useTradeApp } from './trade/TradeAppContext';
 import GroupSelector from './trade/GroupSelector';
+import ReadyStatusToggle from './trade/ReadyStatusToggle';
 import MyGamesTab from './trade/MyGamesTab';
 import BrowseGamesTab from './trade/BrowseGamesTab';
 import AdminTab from './trade/AdminTab';
@@ -13,7 +14,7 @@ interface MathTradeAppProps {
 }
 
 function MathTradeAppContent() {
-  const { activeTab, setActiveTab, currentUser, currentGroup, useMockGames, loading } = useTradeApp();
+  const { activeTab, setActiveTab, currentUser, currentGroup, supabaseUser, games, wants, useMockGames, loading } = useTradeApp();
   
   const tabs = [
     { id: 'my-games', label: 'My Games', component: MyGamesTab },
@@ -46,61 +47,69 @@ function MathTradeAppContent() {
       
       <div className="p-4">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
+          {/* Header with Group Selector */}
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-start justify-between mb-4">
+              {/* Left: Group Name / App Title */}
               <div>
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">Board Game Math Trade</h1>
-                <p className="text-gray-600">Specify acceptable trades, algorithm finds optimal matches</p>
+                {currentGroup ? (
+                  <>
+                    <p className="text-sm text-gray-500 mb-1">Welcome to</p>
+                    <h1 className="text-3xl font-bold text-gray-800">{currentGroup.name}</h1>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {currentGroup.memberIds.length} {currentGroup.memberIds.length === 1 ? 'member' : 'members'}
+                      {currentGroup.inviteCode && ` • Code: ${currentGroup.inviteCode}`}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Board Game Math Trade</h1>
+                    <p className="text-gray-600">Specify acceptable trades, algorithm finds optimal matches</p>
+                  </>
+                )}
               </div>
               
-              {/* User switcher - only in mock mode */}
-              {useMockGames && (
-                <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <select 
-                    value={currentUser.id}
-                    onChange={(e) => {
-                      // This would be handled by context
-                      console.log('User switching not yet implemented in new structure');
-                    }}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    <option value={currentUser.id}>{currentUser.name}</option>
-                  </select>
-                  {currentUser.globalAdmin && (
-                    <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold">
-                      GLOBAL ADMIN
-                    </span>
-                  )}
-                </div>
-              )}
+              {/* Right: Group Selector */}
+              <div className="flex flex-col items-end gap-2">
+                <GroupSelector />
+              </div>
             </div>
-            
-            {/* Group Selector */}
-            <GroupSelector />
           </div>
           
           {/* Only show tabs if user is in a group */}
           {currentGroup && (
             <div className="bg-white rounded-lg shadow-lg mb-6">
               <div className="border-b border-gray-200">
-                <nav className="flex">
-                  {tabs.map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`px-6 py-4 text-sm font-medium transition-colors ${
-                        activeTab === tab.id
-                          ? 'border-b-2 border-indigo-600 text-indigo-600'
-                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+                <nav className="flex items-center justify-between">
+                  <div className="flex">
+                    {tabs.map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`px-6 py-4 text-sm font-medium transition-colors ${
+                          activeTab === tab.id
+                            ? 'border-b-2 border-indigo-600 text-indigo-600'
+                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {/* Ready Status Toggle on the right */}
+                  <div className="px-4">
+                    <ReadyStatusToggle
+                      userId={supabaseUser?.id || String(currentUser.id)}
+                      groupId={currentGroup.id}
+                      myGames={games.filter(g => 
+                        String(g.userId) === String(currentUser.id) && 
+                        String(g.groupId) === String(currentGroup.id)
+                      )}
+                      wants={wants}
+                      useMockGames={useMockGames}
+                    />
+                  </div>
                 </nav>
               </div>
               

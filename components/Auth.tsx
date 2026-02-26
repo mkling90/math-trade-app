@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import MathTradeApp from './MathTradeApp-New';
 import UserSettingsModal from './UserSettingsModal';
+import { ToastProvider } from './ToastProvider';
 
 export default function Auth() {
   const [user, setUser] = useState<User | null>(null);
@@ -232,7 +233,9 @@ export default function Auth() {
       )}
 
       {/* Main app */}
-      <MathTradeApp user={user} />
+      <ToastProvider>
+        <MathTradeApp user={user} />
+      </ToastProvider>
     </div>
   );
 }
