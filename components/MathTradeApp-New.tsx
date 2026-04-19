@@ -53,8 +53,8 @@ function MathTradeAppContent() {
         <div className="max-w-6xl mx-auto">
           {/* Header with Group Selector */}
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <div className="flex items-start justify-between mb-4">
-              {/* Left: Group Name / App Title */}
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+              {/* Group Name / App Title */}
               <div>
                 {currentGroup ? (
                   <>
@@ -72,9 +72,9 @@ function MathTradeAppContent() {
                   </>
                 )}
               </div>
-              
-              {/* Right: Group Selector */}
-              <div className="flex flex-col items-end gap-2">
+
+              {/* Group Selector */}
+              <div className="flex flex-col sm:items-end gap-2">
                 <GroupSelector />
               </div>
             </div>
