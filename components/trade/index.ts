@@ -4,6 +4,7 @@ export { TradeAppProvider, useTradeApp } from './TradeAppContext';
 export { default as GroupSelector } from './GroupSelector';
 export { default as MyGamesTab } from './MyGamesTab';
 export { default as BrowseGamesTab } from './BrowseGamesTab';
+export { default as MembersTab } from './MembersTab';
 export { default as AdminTab } from './AdminTab';
 export { default as TradesTab } from './TradesTab';
 export { default as GameCard } from './GameCard';

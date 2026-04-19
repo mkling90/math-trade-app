@@ -6,6 +6,7 @@ import GroupSelector from './trade/GroupSelector';
 import ReadyStatusToggle from './trade/ReadyStatusToggle';
 import MyGamesTab from './trade/MyGamesTab';
 import BrowseGamesTab from './trade/BrowseGamesTab';
+import MembersTab from './trade/MembersTab';
 import AdminTab from './trade/AdminTab';
 import TradesTab from './trade/TradesTab';
 
@@ -19,6 +20,7 @@ function MathTradeAppContent() {
   const tabs = [
     { id: 'my-games', label: 'My Games', component: MyGamesTab },
     { id: 'browse', label: 'Browse Other Users', component: BrowseGamesTab },
+    { id: 'members', label: 'Members', component: MembersTab },
     { id: 'admin', label: 'Admin', component: AdminTab },
     { id: 'trades', label: 'Calculated Trades', component: TradesTab },
   ];
