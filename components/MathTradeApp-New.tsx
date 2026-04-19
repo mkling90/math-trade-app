@@ -85,12 +85,12 @@ function MathTradeAppContent() {
             <div className="bg-white rounded-lg shadow-lg mb-6">
               <div className="border-b border-gray-200">
                 <nav className="flex items-center justify-between">
-                  <div className="flex">
+                  <div className="flex overflow-x-auto">
                     {tabs.map(tab => (
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`px-6 py-4 text-sm font-medium transition-colors ${
+                        className={`px-3 sm:px-6 py-4 text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
                           activeTab === tab.id
                             ? 'border-b-2 border-indigo-600 text-indigo-600'
                             : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -100,14 +100,14 @@ function MathTradeAppContent() {
                       </button>
                     ))}
                   </div>
-                  
-                  {/* Ready Status Toggle on the right */}
-                  <div className="px-4">
+
+                  {/* Ready Status Toggle — hidden on mobile, shown inline on larger screens */}
+                  <div className="px-4 hidden sm:block flex-shrink-0">
                     <ReadyStatusToggle
                       userId={supabaseUser?.id || String(currentUser.id)}
                       groupId={currentGroup.id}
-                      myGames={games.filter(g => 
-                        String(g.userId) === String(currentUser.id) && 
+                      myGames={games.filter(g =>
+                        String(g.userId) === String(currentUser.id) &&
                         String(g.groupId) === String(currentGroup.id)
                       )}
                       wants={wants}
@@ -115,6 +115,20 @@ function MathTradeAppContent() {
                     />
                   </div>
                 </nav>
+
+                {/* Ready Status Toggle — shown below tabs on mobile */}
+                <div className="sm:hidden px-4 py-2 border-t border-gray-100 flex justify-end">
+                  <ReadyStatusToggle
+                    userId={supabaseUser?.id || String(currentUser.id)}
+                    groupId={currentGroup.id}
+                    myGames={games.filter(g =>
+                      String(g.userId) === String(currentUser.id) &&
+                      String(g.groupId) === String(currentGroup.id)
+                    )}
+                    wants={wants}
+                    useMockGames={useMockGames}
+                  />
+                </div>
               </div>
               
               <div className="p-6">
