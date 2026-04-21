@@ -221,8 +221,8 @@ export default function TradesTab() {
                     </div>
                   )}
                   
-                  <h4 className="font-bold text-lg mb-3">
-                    {trade.type === 'direct' ? '🔄 Direct Swap' : '🔁 Circular Trade'} (Trade #{trade.id})
+                  <h4 className="font-bold text-lg mb-3 text-gray-900 break-words">
+                    {trade.type === 'direct' ? '🔄 Direct Swap' : '🔁 Circular Trade'} — Trade #{trade.id}
                   </h4>
                   
                   <div className="space-y-2">
