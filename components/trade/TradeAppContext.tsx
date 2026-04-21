@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import type { User, Group, Game, Want, Trade } from '@/lib/types';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { INITIAL_USERS, INITIAL_GROUPS, INITIAL_GAMES, INITIAL_WANTS } from '@/lib/mockData';
-import { useProfile, useGroups, useGames, useWants, useGroupMembers } from '@/lib/supabaseData';
+import { useProfile, useGroups, useGames, useWants, useGroupMembers, useGroupTrades } from '@/lib/supabaseData';
 
 interface TradeAppContextType {
   // User & Auth
@@ -94,6 +94,7 @@ export function TradeAppProvider({ children, supabaseUser }: TradeAppProviderPro
   const { members: groupMembers, loading: membersLoading } = useGroupMembers(
     useMockGames ? undefined : currentGroup?.memberIds
   );
+  const { trades: supabaseTrades } = useGroupTrades(groupIdentifier);
   
   // Sync Supabase data when loaded
   useEffect(() => {
@@ -116,6 +117,12 @@ export function TradeAppProvider({ children, supabaseUser }: TradeAppProviderPro
       setWants(supabaseWants);
     }
   }, [useMockGames, supabaseWants]);
+
+  useEffect(() => {
+    if (!useMockGames) {
+      setTrades(supabaseTrades);
+    }
+  }, [useMockGames, supabaseTrades]);
   
   // Sync group members to users array
   useEffect(() => {

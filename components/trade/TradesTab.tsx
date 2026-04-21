@@ -4,16 +4,19 @@ import { RefreshCw, X } from 'lucide-react';
 import { useTradeApp } from './TradeAppContext';
 import { calculateOptimalTrades } from '@/lib/algorithm';
 import { exportTradesToFile } from '@/lib/utils';
+import { saveTrades } from '@/lib/supabaseData';
 
 export default function TradesTab() {
-  const { 
-    currentUser, 
-    currentGroup, 
-    games, 
-    wants, 
+  const {
+    currentUser,
+    supabaseUser,
+    currentGroup,
+    games,
+    wants,
     users,
     trades,
-    setTrades
+    setTrades,
+    useMockGames,
   } = useTradeApp();
   
   // If no group selected
@@ -27,15 +30,28 @@ export default function TradesTab() {
   
   const isAdmin = currentGroup.adminIds?.some(id => String(id) === String(currentUser.id)) || currentUser.globalAdmin;
   
-  const calculateTrades = () => {
-    console.log('Calculating trades for group:', currentGroup.name);
+  const calculateTrades = async () => {
     const result = calculateOptimalTrades(games, wants, users, currentGroup.id);
     setTrades(result);
+    if (!useMockGames && supabaseUser) {
+      try {
+        await saveTrades(String(currentGroup.id), result, supabaseUser.id);
+      } catch (err: any) {
+        console.error('Error saving trades:', err);
+      }
+    }
   };
-  
-  const clearTrades = () => {
+
+  const clearTrades = async () => {
     if (confirm('Clear all calculated trades and start over?')) {
       setTrades([]);
+      if (!useMockGames && supabaseUser) {
+        try {
+          await saveTrades(String(currentGroup.id), [], supabaseUser.id);
+        } catch (err: any) {
+          console.error('Error clearing trades:', err);
+        }
+      }
     }
   };
   

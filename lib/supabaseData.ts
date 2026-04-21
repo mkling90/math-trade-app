@@ -430,6 +430,49 @@ export function useGroupMembers(memberIds: (string | number)[] | undefined) {
   return { members, loading };
 }
 
+export function useGroupTrades(groupId: string | null) {
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!groupId) {
+      setTrades([]);
+      setLoading(false);
+      return;
+    }
+
+    async function fetchTrades() {
+      const { data, error } = await supabase
+        .from('group_trades')
+        .select('trades')
+        .eq('group_id', groupId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching trades:', error);
+      } else if (data) {
+        setTrades(data.trades || []);
+      }
+      setLoading(false);
+    }
+
+    fetchTrades();
+  }, [groupId]);
+
+  return { trades, loading };
+}
+
+export async function saveTrades(groupId: string, trades: Trade[], calculatedBy: string) {
+  const { error } = await supabase
+    .from('group_trades')
+    .upsert(
+      { group_id: groupId, trades, calculated_at: new Date().toISOString(), calculated_by: calculatedBy },
+      { onConflict: 'group_id' }
+    );
+
+  if (error) throw error;
+}
+
 export async function joinGroup(userId: string, inviteCode: string) {
   // Find group by invite code (case-insensitive)
   const { data: group, error: groupError } = await supabase
